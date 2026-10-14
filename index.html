@@ -153,8 +153,6 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 30
             <option value="net">2 · A partir del neto real introducido</option>
           </select>
         </div>
-        <div class="field"><label for="baseSel">Año base de comparación</label><select id="baseSel"></select></div>
-        <div class="field"><label for="endSel">Año final a analizar</label><select id="endSel"></select></div>
         <div class="field">
           <label for="pagasSel">Número de pagas</label>
           <select id="pagasSel"><option value="12">12 pagas (extras prorrateadas)</option><option value="14">14 pagas (2 extras)</option></select>
@@ -217,6 +215,14 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 30
 
   <!-- ============ RESULTADOS ============ -->
   <div data-panel="resultados" class="hidden">
+    <section class="panel">
+      <h2>Periodo analizado</h2>
+      <div class="row">
+        <div class="field"><label for="baseSel">Año base de comparación</label><select id="baseSel"></select></div>
+        <div class="field"><label for="endSel">Año final a analizar</label><select id="endSel"></select></div>
+      </div>
+      <p class="small">Los resultados comparan cada año con el año base y se muestran hasta el año final.</p>
+    </section>
     <div id="resWarnings"></div>
     <div class="cards" id="cards"></div>
     <section class="panel explain" style="margin-top:16px"><h2>Qué dicen tus números</h2><div id="explain"></div></section>
