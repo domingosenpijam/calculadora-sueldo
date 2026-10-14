@@ -226,7 +226,7 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 30
     </div>
     <section class="panel">
       <h2>Tabla de resultados</h2>
-      <p class="small">Variación anual = respecto al año anterior disponible (marcado con † si hay años intermedios sin datos; en ese caso es la variación total del intervalo, no anual). Neto real y ganancia real en € del año base; neto necesario y diferencia en € corrientes del año.</p>
+      <p class="small">Variación anual = respecto al año anterior disponible (marcado con † si hay años intermedios sin datos; en ese caso es la variación total del intervalo, no anual). «Var. real anual» = variación del neto descontada la inflación respecto al año inmediatamente anterior, (neto<sub>t</sub> / neto<sub>t−1</sub>) / (IPC<sub>t</sub> / IPC<sub>t−1</sub>) − 1; queda vacía si falta el año anterior. Neto real y ganancia real en € del año base; neto necesario y diferencia en € corrientes del año.</p>
       <div class="tablewrap"><table id="resTable"></table></div>
     </section>
   </div>
@@ -9653,6 +9653,9 @@ const Calc = (() => {
       o.netVarPrev = prev ? pct(ratio(r.net, prev.net)) : null;
       // inflación anual oficial: año t frente a t−1 (si existen ambos índices)
       o.inflYear = (cpi[r.year] > 0 && cpi[r.year - 1] > 0) ? cpi[r.year] / cpi[r.year - 1] - 1 : null;
+      // variación real del neto frente al año inmediatamente anterior (cociente compuesto); null si falta ese año o su IPC
+      o.realVarPrev = (prev && prev.year === r.year - 1 && prev.net > 0 && r.net > 0 && cpi[r.year] > 0 && cpi[prev.year] > 0)
+        ? (r.net / prev.net) / (cpi[r.year] / cpi[prev.year]) - 1 : null;
       // acumulados desde el año base
       o.grossVarCum = pct(ratio(r.gross, base.gross));
       o.netVarCum = pct(ratio(r.net, base.net));
@@ -10025,7 +10028,7 @@ const UI = (() => {
 
     // tabla
     const pers = state.persOn;
-    const head = ['Año', 'Bruto', 'Var. bruto anual', 'Var. bruto acum.', 'Neto (€ corrientes)', mesLbl(), 'Var. neto anual', 'Var. neto acum.', 'IPC medio (índice)', 'Inflación anual', 'Inflación acum.', `Neto en € de ${b.year}`, 'Var. real acum.', `Ganancia/pérdida real (€ de ${b.year})`, 'Neto necesario (€ corrientes)', 'Diferencia vs necesario', 'Bruto aprox. necesario'];
+    const head = ['Año', 'Bruto', 'Var. bruto anual', 'Var. bruto acum.', 'Neto (€ corrientes)', mesLbl(), 'Var. neto anual', 'Var. neto acum.', 'IPC medio (índice)', 'Inflación anual', 'Inflación acum.', `Neto en € de ${b.year}`, 'Var. real anual', 'Var. real acum.', `Ganancia/pérdida real (€ de ${b.year})`, 'Neto necesario (€ corrientes)', 'Diferencia vs necesario', 'Bruto aprox. necesario'];
     if (pers) head.push('Inflación personal acum.', `Neto real personal (€ de ${b.year})`, 'Var. real personal');
     const body = an.rows.map(o => {
       const src = o.netSource === 'est' ? '<span class="badge est">estimado</span>' : '<span class="badge real">real</span>';
@@ -10036,7 +10039,7 @@ const UI = (() => {
         `<td>${o.gross > 0 ? eur(o.gross) : '—'}</td>`, `<td>${pct(o.grossVarPrev)}${o.grossVarPrev != null ? dag : ''}</td>`, `<td>${pct(o.grossVarCum)}</td>`,
         `<td>${eur(o.net)} ${src}</td>`, `<td>${eur(o.net / pagas())}</td>`, `<td>${pct(o.netVarPrev)}${o.netVarPrev != null ? dag : ''}</td>`, `<td>${pct(o.netVarCum)}</td>`,
         `<td>${o.cpi ? fmtNum1.format(o.cpi) : '—'} ${cpiB}</td>`, `<td>${pct(o.inflYear)}</td>`, `<td>${pct(o.inflCum)}</td>`,
-        `<td>${eur(o.netReal)}</td>`, `<td class="${dirCls(o.realVarCum)}">${pct(o.realVarCum)}</td>`, `<td class="${dirCls(o.realGainBase)}">${eurS(o.realGainBase)}</td>`,
+        `<td>${eur(o.netReal)}</td>`, `<td class="${dirCls(o.realVarPrev)}">${pct(o.realVarPrev)}</td>`, `<td class="${dirCls(o.realVarCum)}">${pct(o.realVarCum)}</td>`, `<td class="${dirCls(o.realGainBase)}">${eurS(o.realGainBase)}</td>`,
         `<td>${eur(o.netNeeded)}</td>`, `<td class="${dirCls(o.gapNeeded)}">${eurS(o.gapNeeded)}</td>`,
         `<td>${o.grossNeeded != null ? '≈ ' + eur(o.grossNeeded) + ' <span class="badge est">estimado</span>' : `<span class="small" title="${esc(o.grossNeededNote)}">— ${esc(o.grossNeededNote ? '(' + o.grossNeededNote + ')' : '')}</span>`}</td>`,
       ];
